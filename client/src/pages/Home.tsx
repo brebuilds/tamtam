@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText } from "lucide-react";
+import { Link } from "wouter";
 import LaserFlow from "@/components/LaserFlow";
 import ElectricBorder from "@/components/ElectricBorder";
 
@@ -92,11 +93,13 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-white mb-8 tracking-tight">Quick Actions</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <QuickActionCard
-                title="Search Products"
-                description="Find parts instantly"
-                icon={<Search className="w-8 h-8" />}
-              />
+              <Link href="/search">
+                <QuickActionCard
+                  title="Search Products"
+                  description="Find parts instantly"
+                  icon={<Search className="w-8 h-8" />}
+                />
+              </Link>
               <QuickActionCard
                 title="Update Stock"
                 description="Manage inventory"
