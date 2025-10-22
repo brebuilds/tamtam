@@ -2,278 +2,242 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
-import ElectricBorder from "@/components/ElectricBorder";
+import { trpc } from "@/lib/trpc";
+import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText } from "lucide-react";
 import LaserFlow from "@/components/LaserFlow";
-import { useState } from "react";
-import { 
-  Package, 
-  ShoppingCart, 
-  TrendingUp, 
-  Search,
-  BarChart3,
-  AlertCircle 
-} from "lucide-react";
-
-function QuickActionCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const cardContent = (
-    <Card 
-      className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all cursor-pointer group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="flex items-center space-x-4">
-        <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] group-hover:scale-110 transition-transform">
-          {icon}
-        </div>
-        <div>
-          <h3 className="font-semibold">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-      </div>
-    </Card>
-  );
-
-  if (isHovered) {
-    return (
-      <ElectricBorder
-        color="#7FBF3F"
-        speed={1}
-        chaos={0.5}
-        thickness={2}
-        style={{ borderRadius: 12 }}
-      >
-        {cardContent}
-      </ElectricBorder>
-    );
-  }
-
-  return cardContent;
-}
+import ElectricBorder from "@/components/ElectricBorder";
 
 export default function Home() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  
+  // Fetch product stats
+  const { data: stats, isLoading: statsLoading } = trpc.products.stats.useQuery();
+  
+  // Fetch recent products
+  const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery({ limit: 10 });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-card">
-        <div className="container max-w-4xl">
-          <div className="text-center space-y-8">
-            {/* Hero Section with Gradient */}
-            <div className="space-y-4">
-              <h1 className="text-6xl font-bold bg-gradient-to-r from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] bg-clip-text text-transparent">
-                {APP_TITLE}
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                AI-powered inventory management for diesel engine parts. 
-                Zero-lag performance, intelligent automation, real-time insights.
-              </p>
-            </div>
-
-            {/* Feature Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
-              <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)]">
-                    <Search className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg">AI Search</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Semantic search understands intent, not just keywords
-                  </p>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)]">
-                    <ShoppingCart className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg">PO Automation</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Auto-match vendor acknowledgments with 80% accuracy
-                  </p>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all">
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)]">
-                    <TrendingUp className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg">Real-Time Insights</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Live dashboards with zero-lag performance
-                  </p>
-                </div>
-              </Card>
-            </div>
-
-            {/* CTA */}
-            <div className="mt-12">
-              <a href={getLoginUrl()}>
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] hover:opacity-90 transition-opacity text-white font-semibold px-8 py-6 text-lg"
-                >
-                  Sign In to Get Started
-                </Button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Authenticated Dashboard with LaserFlow
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-[#0a0a0f]">
       {/* LaserFlow Background */}
       <div className="absolute inset-0 z-0">
         <LaserFlow
+          color="#7FBF3F"
           horizontalBeamOffset={0.1}
           verticalBeamOffset={0.0}
-          color="#7FBF3F"
-          flowSpeed={0.35}
-          fogIntensity={0.25}
-          wispDensity={0.8}
-          wispIntensity={3.0}
-          dpr={0.75}
         />
       </div>
 
-      {/* Content Layer */}
+      {/* Content */}
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-border/30 bg-background/40 backdrop-blur-md sticky top-0 z-50">
-          <div className="container py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] bg-clip-text text-transparent">
-                  {APP_TITLE}
-                </h1>
-                <p className="text-sm text-muted-foreground">Welcome back, {user?.name || 'User'}</p>
-              </div>
-              <Button variant="outline" onClick={() => logout()} className="bg-background/50 backdrop-blur">
+        <header className="border-b border-white/10 backdrop-blur-sm bg-black/20">
+          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">{APP_TITLE}</h1>
+              {isAuthenticated && user && (
+                <p className="text-sm text-gray-400">Welcome back, {user.name}</p>
+              )}
+            </div>
+            {isAuthenticated ? (
+              <Button variant="outline" className="bg-white/5 border-white/20 hover:bg-white/10">
                 Sign Out
               </Button>
-            </div>
+            ) : (
+              <Button 
+                onClick={() => window.location.href = getLoginUrl()}
+                className="bg-gradient-to-r from-[#7FBF3F] to-[#5a9e2a] hover:from-[#6aa835] hover:to-[#4a8520]"
+              >
+                Sign In
+              </Button>
+            )}
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="container py-8">
-          <div className="space-y-8">
-            {/* Quick Stats */}
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Products</p>
-                      <p className="text-3xl font-bold mt-1">0</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <Package className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Open POs</p>
-                      <p className="text-3xl font-bold mt-1">0</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <ShoppingCart className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Low Stock Items</p>
-                      <p className="text-3xl font-bold mt-1">0</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-destructive/10">
-                      <AlertCircle className="h-6 w-6 text-destructive" />
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Active Vendors</p>
-                      <p className="text-3xl font-bold mt-1">0</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <BarChart3 className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-                </Card>
-              </div>
+        <main className="container mx-auto px-6 py-12">
+          {/* Dashboard Overview */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-white mb-8 tracking-tight">Dashboard Overview</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Total Products"
+                value={statsLoading ? "..." : stats?.total.toLocaleString() || "0"}
+                icon={<Package className="w-6 h-6" />}
+                iconColor="text-green-400"
+              />
+              <StatCard
+                title="Open POs"
+                value="0"
+                icon={<ShoppingCart className="w-6 h-6" />}
+                iconColor="text-blue-400"
+              />
+              <StatCard
+                title="Low Stock Items"
+                value={statsLoading ? "..." : stats?.lowStock.toLocaleString() || "0"}
+                icon={<AlertTriangle className="w-6 h-6" />}
+                iconColor="text-red-400"
+              />
+              <StatCard
+                title="Active Vendors"
+                value="0"
+                icon={<TrendingUp className="w-6 h-6" />}
+                iconColor="text-purple-400"
+              />
             </div>
+          </section>
 
-            {/* Quick Actions */}
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <QuickActionCard
-                  icon={<Search className="h-6 w-6 text-white" />}
-                  title="Search Products"
-                  description="Find parts instantly"
-                />
-
-                <QuickActionCard
-                  icon={<Package className="h-6 w-6 text-white" />}
-                  title="Update Stock"
-                  description="Manage inventory"
-                />
-
-                <QuickActionCard
-                  icon={<ShoppingCart className="h-6 w-6 text-white" />}
-                  title="Create PO"
-                  description="New purchase order"
-                />
-              </div>
+          {/* Quick Actions */}
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold text-white mb-8 tracking-tight">Quick Actions</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <QuickActionCard
+                title="Search Products"
+                description="Find parts instantly"
+                icon={<Search className="w-8 h-8" />}
+              />
+              <QuickActionCard
+                title="Update Stock"
+                description="Manage inventory"
+                icon={<Box className="w-8 h-8" />}
+              />
+              <QuickActionCard
+                title="Create PO"
+                description="New purchase order"
+                icon={<FileText className="w-8 h-8" />}
+              />
             </div>
+          </section>
 
-            {/* Status Message */}
-            <Card className="p-6 bg-background/60 backdrop-blur-md border-primary/30">
-              <div className="flex items-start space-x-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <AlertCircle className="h-5 w-5 text-primary" />
+          {/* Recent Products */}
+          {!productsLoading && products && products.length > 0 && (
+            <section>
+              <h2 className="text-3xl font-bold text-white mb-8 tracking-tight">Recent Products</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.slice(0, 6).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* System Status */}
+          <section className="mt-12">
+            <Card className="bg-white/5 border-green-500/30 backdrop-blur-sm p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">System Ready</h3>
-                  <p className="text-sm text-muted-foreground">
-                    The inventory system is configured and ready to receive data. 
-                    Import your database to populate products, vendors, and purchase orders.
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">System Ready</h3>
+                  <p className="text-gray-400 text-sm">
+                    The inventory system is configured and ready. {stats?.total.toLocaleString() || 0} products loaded from database.
                   </p>
                 </div>
               </div>
             </Card>
-          </div>
+          </section>
         </main>
       </div>
     </div>
+  );
+}
+
+// Stat Card Component
+function StatCard({ title, value, icon, iconColor }: { 
+  title: string; 
+  value: string; 
+  icon: React.ReactNode; 
+  iconColor: string;
+}) {
+  return (
+    <Card className="bg-white/5 border-white/10 backdrop-blur-sm p-6 hover:bg-white/10 transition-all">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-400 mb-1">{title}</p>
+          <p className="text-3xl font-bold text-white">{value}</p>
+        </div>
+        <div className={`${iconColor}`}>
+          {icon}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Quick Action Card Component with Electric Border
+function QuickActionCard({ title, description, icon }: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="group relative">
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <ElectricBorder
+          color="#7FBF3F"
+          speed={1}
+          chaos={0.5}
+          thickness={2}
+          style={{ borderRadius: 12 }}
+        >
+          <Card className="bg-white/5 border-transparent backdrop-blur-sm p-6 cursor-pointer h-full">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center flex-shrink-0 text-green-400">
+                {icon}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
+                <p className="text-sm text-gray-400">{description}</p>
+              </div>
+            </div>
+          </Card>
+        </ElectricBorder>
+      </div>
+      
+      <div className="opacity-100 group-hover:opacity-0 transition-opacity duration-300 absolute inset-0">
+        <Card className="bg-white/5 border-white/10 backdrop-blur-sm p-6 cursor-pointer h-full hover:bg-white/10 transition-colors">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center flex-shrink-0 text-green-400">
+              {icon}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
+              <p className="text-sm text-gray-400">{description}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Product Card Component
+function ProductCard({ product }: { product: any }) {
+  return (
+    <Card className="bg-white/5 border-white/10 backdrop-blur-sm p-6 hover:bg-white/10 transition-all">
+      <div className="mb-4">
+        <div className="text-xs text-green-400 font-mono mb-2">{product.sku}</div>
+        <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">{product.name}</h3>
+        {product.application && (
+          <p className="text-sm text-gray-400 mb-2">{product.application}</p>
+        )}
+        {product.years && (
+          <p className="text-xs text-gray-500">Years: {product.years}</p>
+        )}
+      </div>
+      
+      <div className="flex items-center justify-between pt-4 border-t border-white/10">
+        <div className="text-xs text-gray-400">
+          Stock: <span className="text-white font-semibold">{product.stock_quantity || 0}</span>
+        </div>
+        <Button size="sm" variant="ghost" className="text-green-400 hover:text-green-300 hover:bg-green-500/10">
+          View Details
+        </Button>
+      </div>
+    </Card>
   );
 }
 

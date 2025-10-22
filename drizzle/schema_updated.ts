@@ -1,7 +1,7 @@
 import { mysqlEnum, mysqlTable, text, timestamp, varchar, int, boolean, index } from "drizzle-orm/mysql-core";
 
 /**
- * TamerX Inventory Management Database Schema
+ * TamerX Inventory Management Database Schema - Updated for Access DB Import
  */
 
 // ============================================================================
@@ -22,11 +22,11 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 // ============================================================================
-// PRODUCTS TABLE (Steering Rack Components)
+// PRODUCTS TABLE (Steering Rack Components from Access DB)
 // ============================================================================
 
 export const products = mysqlTable("products", {
-  id: varchar("id", { length: 64 }).primaryKey(),
+  id: varchar("id", { length: 64 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
   
   // Primary identifiers
   sku: varchar("sku", { length: 100 }).notNull().unique(),
@@ -110,4 +110,6 @@ export const products = mysqlTable("products", {
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
+
+// Other tables remain the same...
 
