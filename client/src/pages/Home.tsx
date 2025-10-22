@@ -148,9 +148,10 @@ export default function Home() {
           verticalBeamOffset={0.0}
           color="#7FBF3F"
           flowSpeed={0.35}
-          fogIntensity={0.35}
-          wispDensity={1.2}
-          wispIntensity={4.0}
+          fogIntensity={0.25}
+          wispDensity={0.8}
+          wispIntensity={3.0}
+          dpr={0.75}
         />
       </div>
 
