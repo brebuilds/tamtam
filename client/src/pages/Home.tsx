@@ -38,7 +38,7 @@ function QuickActionCard({ icon, title, description }: { icon: React.ReactNode; 
   if (isHovered) {
     return (
       <ElectricBorder
-        color="#7df9ff"
+        color="#7FBF3F"
         speed={1}
         chaos={0.5}
         thickness={2}
@@ -146,7 +146,7 @@ export default function Home() {
         <LaserFlow
           horizontalBeamOffset={0.1}
           verticalBeamOffset={0.0}
-          color="#7df9ff"
+          color="#7FBF3F"
           flowSpeed={0.35}
           fogIntensity={0.35}
           wispDensity={1.2}
