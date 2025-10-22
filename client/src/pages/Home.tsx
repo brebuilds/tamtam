@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import ElectricBorder from "@/components/ElectricBorder";
+import LaserFlow from "@/components/LaserFlow";
 import { useState } from "react";
 import { 
   Package, 
@@ -137,121 +138,140 @@ export default function Home() {
     );
   }
 
-  // Authenticated Dashboard
+  // Authenticated Dashboard with LaserFlow
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-card">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* LaserFlow Background */}
+      <div className="absolute inset-0 z-0">
+        <LaserFlow
+          horizontalBeamOffset={0.1}
+          verticalBeamOffset={0.0}
+          color="#7df9ff"
+          flowSpeed={0.35}
+          fogIntensity={0.35}
+          wispDensity={1.2}
+          wispIntensity={4.0}
+        />
+      </div>
+
+      {/* Content Layer */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="border-b border-border/30 bg-background/40 backdrop-blur-md sticky top-0 z-50">
+          <div className="container py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] bg-clip-text text-transparent">
+                  {APP_TITLE}
+                </h1>
+                <p className="text-sm text-muted-foreground">Welcome back, {user?.name || 'User'}</p>
+              </div>
+              <Button variant="outline" onClick={() => logout()} className="bg-background/50 backdrop-blur">
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container py-8">
+          <div className="space-y-8">
+            {/* Quick Stats */}
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] bg-clip-text text-transparent">
-                {APP_TITLE}
-              </h1>
-              <p className="text-sm text-muted-foreground">Welcome back, {user?.name || 'User'}</p>
-            </div>
-            <Button variant="outline" onClick={() => logout()}>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+              <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Products</p>
+                      <p className="text-3xl font-bold mt-1">0</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <Package className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                </Card>
 
-      {/* Main Content */}
-      <main className="container py-8">
-        <div className="space-y-8">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-6 bg-gradient-to-br from-card to-card/50 border-border/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Products</p>
-                  <p className="text-3xl font-bold mt-1">0</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <Package className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </Card>
+                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Open POs</p>
+                      <p className="text-3xl font-bold mt-1">0</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <ShoppingCart className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                </Card>
 
-            <Card className="p-6 bg-gradient-to-br from-card to-card/50 border-border/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Open POs</p>
-                  <p className="text-3xl font-bold mt-1">0</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <ShoppingCart className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </Card>
+                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Low Stock Items</p>
+                      <p className="text-3xl font-bold mt-1">0</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-destructive/10">
+                      <AlertCircle className="h-6 w-6 text-destructive" />
+                    </div>
+                  </div>
+                </Card>
 
-            <Card className="p-6 bg-gradient-to-br from-card to-card/50 border-border/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Low Stock Items</p>
-                  <p className="text-3xl font-bold mt-1">0</p>
-                </div>
-                <div className="p-3 rounded-lg bg-destructive/10">
-                  <AlertCircle className="h-6 w-6 text-destructive" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 bg-gradient-to-br from-card to-card/50 border-border/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Vendors</p>
-                  <p className="text-3xl font-bold mt-1">0</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <BarChart3 className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <QuickActionCard
-                icon={<Search className="h-6 w-6 text-white" />}
-                title="Search Products"
-                description="Find parts instantly"
-              />
-
-              <QuickActionCard
-                icon={<Package className="h-6 w-6 text-white" />}
-                title="Update Stock"
-                description="Manage inventory"
-              />
-
-              <QuickActionCard
-                icon={<ShoppingCart className="h-6 w-6 text-white" />}
-                title="Create PO"
-                description="New purchase order"
-              />
-            </div>
-          </div>
-
-          {/* Status Message */}
-          <Card className="p-6 bg-card/30 backdrop-blur border-primary/30">
-            <div className="flex items-start space-x-4">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <AlertCircle className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">System Ready</h3>
-                <p className="text-sm text-muted-foreground">
-                  The inventory system is configured and ready to receive data. 
-                  Import your database to populate products, vendors, and purchase orders.
-                </p>
+                <Card className="p-6 bg-background/60 backdrop-blur-md border-border/50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Active Vendors</p>
+                      <p className="text-3xl font-bold mt-1">0</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <BarChart3 className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                </Card>
               </div>
             </div>
-          </Card>
-        </div>
-      </main>
+
+            {/* Quick Actions */}
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <QuickActionCard
+                  icon={<Search className="h-6 w-6 text-white" />}
+                  title="Search Products"
+                  description="Find parts instantly"
+                />
+
+                <QuickActionCard
+                  icon={<Package className="h-6 w-6 text-white" />}
+                  title="Update Stock"
+                  description="Manage inventory"
+                />
+
+                <QuickActionCard
+                  icon={<ShoppingCart className="h-6 w-6 text-white" />}
+                  title="Create PO"
+                  description="New purchase order"
+                />
+              </div>
+            </div>
+
+            {/* Status Message */}
+            <Card className="p-6 bg-background/60 backdrop-blur-md border-primary/30">
+              <div className="flex items-start space-x-4">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <AlertCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">System Ready</h3>
+                  <p className="text-sm text-muted-foreground">
+                    The inventory system is configured and ready to receive data. 
+                    Import your database to populate products, vendors, and purchase orders.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
