@@ -2,6 +2,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
+import ElectricBorder from "@/components/ElectricBorder";
+import { useState } from "react";
 import { 
   Package, 
   ShoppingCart, 
@@ -10,6 +12,44 @@ import {
   BarChart3,
   AlertCircle 
 } from "lucide-react";
+
+function QuickActionCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const cardContent = (
+    <Card 
+      className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all cursor-pointer group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="flex items-center space-x-4">
+        <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+        <div>
+          <h3 className="font-semibold">{title}</h3>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+      </div>
+    </Card>
+  );
+
+  if (isHovered) {
+    return (
+      <ElectricBorder
+        color="#7df9ff"
+        speed={1}
+        chaos={0.5}
+        thickness={2}
+        style={{ borderRadius: 12 }}
+      >
+        {cardContent}
+      </ElectricBorder>
+    );
+  }
+
+  return cardContent;
+}
 
 export default function Home() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -175,41 +215,23 @@ export default function Home() {
           <div>
             <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all cursor-pointer group">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] group-hover:scale-110 transition-transform">
-                    <Search className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Search Products</h3>
-                    <p className="text-sm text-muted-foreground">Find parts instantly</p>
-                  </div>
-                </div>
-              </Card>
+              <QuickActionCard
+                icon={<Search className="h-6 w-6 text-white" />}
+                title="Search Products"
+                description="Find parts instantly"
+              />
 
-              <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all cursor-pointer group">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] group-hover:scale-110 transition-transform">
-                    <Package className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Update Stock</h3>
-                    <p className="text-sm text-muted-foreground">Manage inventory</p>
-                  </div>
-                </div>
-              </Card>
+              <QuickActionCard
+                icon={<Package className="h-6 w-6 text-white" />}
+                title="Update Stock"
+                description="Manage inventory"
+              />
 
-              <Card className="p-6 bg-card/50 backdrop-blur border-border/50 hover:border-primary/50 transition-all cursor-pointer group">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-[oklch(0.65_0.14_135)] to-[oklch(0.7_0.16_145)] group-hover:scale-110 transition-transform">
-                    <ShoppingCart className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Create PO</h3>
-                    <p className="text-sm text-muted-foreground">New purchase order</p>
-                  </div>
-                </div>
-              </Card>
+              <QuickActionCard
+                icon={<ShoppingCart className="h-6 w-6 text-white" />}
+                title="Create PO"
+                description="New purchase order"
+              />
             </div>
           </div>
 
