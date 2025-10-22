@@ -51,6 +51,32 @@ export const appRouter = router({
     stats: publicProcedure.query(async () => {
       return await db.getProductStats();
     }),
+
+    updateStock: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        quantity: z.number().int(),
+        note: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.updateProductStock(input.id, input.quantity, input.note);
+      }),
+
+    adjustStock: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        adjustment: z.number().int(),
+        reason: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.adjustProductStock(input.id, input.adjustment, input.reason);
+      }),
+
+    getLowStock: publicProcedure
+      .input(z.object({ limit: z.number().optional().default(50) }))
+      .query(async ({ input }) => {
+        return await db.getLowStockProducts(input.limit);
+      }),
   }),
 });
 

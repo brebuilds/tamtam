@@ -168,3 +168,69 @@ export async function getProductStats() {
   return stats;
 }
 
+
+
+export async function updateProductStock(
+  productId: string, 
+  newQuantity: number, 
+  note?: string
+): Promise<Product | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(products)
+    .set({ 
+      stock_quantity: newQuantity,
+      updated_at: new Date()
+    })
+    .where(eq(products.id, productId));
+
+  return await getProductById(productId);
+}
+
+export async function adjustProductStock(
+  productId: string,
+  adjustment: number,
+  reason: string
+): Promise<Product | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const product = await getProductById(productId);
+  if (!product) return undefined;
+
+  const currentStock = product.stock_quantity || 0;
+  const newStock = Math.max(0, currentStock + adjustment);
+
+  await db
+    .update(products)
+    .set({ 
+      stock_quantity: newStock,
+      updated_at: new Date()
+    })
+    .where(eq(products.id, productId));
+
+  return await getProductById(productId);
+}
+
+export async function getLowStockProducts(limit: number = 50): Promise<Product[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const allProducts = await db
+    .select()
+    .from(products)
+    .where(eq(products.status, 'active'))
+    .orderBy(desc(products.stock_quantity));
+
+  // Filter for low stock items
+  const lowStock = allProducts.filter(p => 
+    p.stock_quantity !== null && 
+    p.reorder_point !== null && 
+    p.stock_quantity <= p.reorder_point
+  );
+
+  return lowStock.slice(0, limit);
+}
+

@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import ProductDetail from "./pages/ProductDetail";
+import StockManagement from "./pages/StockManagement";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path="/search" component={Search} />
+      <Route path="/stock" component={StockManagement} />
       <Route path="/product/:id" component={ProductDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

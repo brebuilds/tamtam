@@ -100,11 +100,13 @@ export default function Home() {
                   icon={<Search className="w-8 h-8" />}
                 />
               </Link>
-              <QuickActionCard
-                title="Update Stock"
-                description="Manage inventory"
-                icon={<Box className="w-8 h-8" />}
-              />
+              <Link href="/stock">
+                <QuickActionCard
+                  title="Update Stock"
+                  description="Manage inventory"
+                  icon={<Box className="w-8 h-8" />}
+                />
+              </Link>
               <QuickActionCard
                 title="Create PO"
                 description="New purchase order"
