@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+import { semanticSearch } from "./aiSearch";
 
 export const appRouter = router({
   system: systemRouter,
@@ -76,6 +77,18 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().optional().default(50) }))
       .query(async ({ input }) => {
         return await db.getLowStockProducts(input.limit);
+      }),
+
+    semanticSearch: publicProcedure
+      .input(z.object({ 
+        query: z.string(),
+        limit: z.number().optional().default(10)
+      }))
+      .query(async ({ input }) => {
+        // First get all products (or a large subset)
+        const allProducts = await db.getAllProducts(1000);
+        // Then use AI to rank them
+        return await semanticSearch(input.query, allProducts, input.limit);
       }),
   }),
 });

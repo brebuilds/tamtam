@@ -3,13 +3,15 @@ import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search as SearchIcon, Package, Calendar, Hash, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search as SearchIcon, Package, Calendar, Hash, AlertCircle, Sparkles, Zap } from "lucide-react";
 import { Link } from "wouter";
 import LaserFlow from "@/components/LaserFlow";
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [useAI, setUseAI] = useState(true);
 
   // Debounce search
   const handleSearch = (value: string) => {
@@ -20,11 +22,20 @@ export default function Search() {
     return () => clearTimeout(timer);
   };
 
-  // Search products
-  const { data: products, isLoading } = trpc.products.search.useQuery(
+  // Regular SQL search
+  const { data: sqlProducts, isLoading: sqlLoading } = trpc.products.search.useQuery(
     { query: debouncedQuery, limit: 50 },
-    { enabled: debouncedQuery.length > 0 }
+    { enabled: debouncedQuery.length > 0 && !useAI }
   );
+
+  // AI semantic search
+  const { data: aiResults, isLoading: aiLoading } = trpc.products.semanticSearch.useQuery(
+    { query: debouncedQuery, limit: 20 },
+    { enabled: debouncedQuery.length > 0 && useAI }
+  );
+
+  const products = useAI ? aiResults?.map(r => r.product) : sqlProducts;
+  const isLoading = useAI ? aiLoading : sqlLoading;
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0a0a0f]">
@@ -61,6 +72,26 @@ export default function Search() {
               <p className="text-gray-400 text-lg">
                 Find steering rack components instantly
               </p>
+            </div>
+
+            {/* AI Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <Button
+                variant={useAI ? "default" : "outline"}
+                onClick={() => setUseAI(true)}
+                className={useAI ? "bg-gradient-to-r from-[#7FBF3F] to-[#5a9e2a]" : "bg-white/5 border-white/20"}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI Search
+              </Button>
+              <Button
+                variant={!useAI ? "default" : "outline"}
+                onClick={() => setUseAI(false)}
+                className={!useAI ? "bg-gradient-to-r from-[#7FBF3F] to-[#5a9e2a]" : "bg-white/5 border-white/20"}
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Quick Search
+              </Button>
             </div>
 
             {/* Search Input */}
@@ -104,9 +135,26 @@ export default function Search() {
                     </div>
 
                     <div className="space-y-4">
-                      {products.map((product) => (
-                        <ProductSearchResult key={product.id} product={product} />
-                      ))}
+                      {products.map((product, idx) => {
+                        const aiResult = useAI ? aiResults?.[idx] : null;
+                        return (
+                          <div key={product.id}>
+                            <ProductSearchResult product={product} />
+                            {aiResult && aiResult.reasoning && (
+                              <Card className="bg-purple-500/10 border-purple-500/30 backdrop-blur-sm p-3 mt-2 ml-4">
+                                <div className="flex items-start gap-2">
+                                  <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1">
+                                    <p className="text-sm text-purple-200">
+                                      <span className="font-semibold">AI Match ({aiResult.relevanceScore}%):</span> {aiResult.reasoning}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Card>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </>
                 )}
