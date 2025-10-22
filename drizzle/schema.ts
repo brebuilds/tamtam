@@ -1,4 +1,4 @@
-import { mysqlEnum, mysqlTable, text, timestamp, varchar, int, boolean, index } from "drizzle-orm/mysql-core";
+import { mysqlEnum, mysqlTable, text, timestamp, varchar, int, decimal, boolean, json, index } from "drizzle-orm/mysql-core";
 
 /**
  * TamerX Inventory Management Database Schema
@@ -13,13 +13,46 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin", "purchasing", "shop_floor", "sales"]).default("user").notNull(),
+  role: mysqlEnum("role", ["admin", "manager", "shop_floor", "sales", "readonly"]).default("readonly").notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow(),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+// ============================================================================
+// CUSTOM FORMS SYSTEM
+// ============================================================================
+
+export const formTemplates = mysqlTable("form_templates", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }),
+  version: int("version").notNull().default(1),
+  isActive: boolean("isActive").notNull().default(true),
+  fields: json("fields").notNull(),
+  createdBy: varchar("createdBy", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
+});
+
+export const formSubmissions = mysqlTable("form_submissions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  templateId: varchar("templateId", { length: 64 }).notNull(),
+  productId: varchar("productId", { length: 64 }),
+  data: json("data").notNull(),
+  submittedBy: varchar("submittedBy", { length: 64 }),
+  submittedAt: timestamp("submittedAt").defaultNow(),
+  status: varchar("status", { length: 50 }).default("submitted"),
+  notes: text("notes"),
+});
+
+export type FormTemplate = typeof formTemplates.$inferSelect;
+export type InsertFormTemplate = typeof formTemplates.$inferInsert;
+export type FormSubmission = typeof formSubmissions.$inferSelect;
+export type InsertFormSubmission = typeof formSubmissions.$inferInsert;
 
 // ============================================================================
 // PRODUCTS TABLE (Steering Rack Components)

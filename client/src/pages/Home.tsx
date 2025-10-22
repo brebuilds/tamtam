@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
@@ -10,6 +11,7 @@ import ElectricBorder from "@/components/ElectricBorder";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
+  const permissions = usePermissions();
   
   // Fetch product stats
   const { data: stats, isLoading: statsLoading } = trpc.products.stats.useQuery();
@@ -100,13 +102,15 @@ export default function Home() {
                   icon={<Search className="w-8 h-8" />}
                 />
               </Link>
-              <Link href="/stock">
-                <QuickActionCard
-                  title="Update Stock"
-                  description="Manage inventory"
-                  icon={<Box className="w-8 h-8" />}
-                />
-              </Link>
+              {permissions.canUpdateStock && (
+                <Link href="/stock">
+                  <QuickActionCard
+                    title="Update Stock"
+                    description="Manage inventory"
+                    icon={<Box className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
               <QuickActionCard
                 title="Create PO"
                 description="New purchase order"
