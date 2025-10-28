@@ -126,7 +126,11 @@ export const products = mysqlTable("products", {
   reorder_point: int("reorder_point").default(5),
   unit_cost: int("unit_cost"), // Stored in cents
   unit_price: int("unit_price"), // Stored in cents
-  
+
+  // Images - JSON array of image URLs
+  images: json("images"), // Array of image URLs: string[]
+  primary_image: text("primary_image"), // URL of primary image
+
   // Status
   status: mysqlEnum("status", ["active", "inactive", "discontinued"]).default("active"),
   
@@ -143,4 +147,70 @@ export const products = mysqlTable("products", {
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
+
+// ============================================================================
+// PURCHASE ORDERS
+// ============================================================================
+
+export const vendors = mysqlTable("vendors", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  vendor_code: varchar("vendor_code", { length: 64 }).notNull().unique(),
+  vendor_name: varchar("vendor_name", { length: 255 }).notNull(),
+  contact_name: varchar("contact_name", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 32 }),
+  address: text("address"),
+  lead_time_days: int("lead_time_days").default(0),
+  payment_terms: text("payment_terms"),
+  notes: text("notes"),
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  vendorCodeIdx: index("vendor_code_idx").on(table.vendor_code),
+}));
+
+export const purchaseOrders = mysqlTable("purchase_orders", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  po_number: varchar("po_number", { length: 128 }).notNull().unique(),
+  vendor_id: varchar("vendor_id", { length: 64 }).notNull(),
+  po_date: timestamp("po_date").notNull(),
+  expected_delivery_date: timestamp("expected_delivery_date"),
+  actual_delivery_date: timestamp("actual_delivery_date"),
+  status: mysqlEnum("status", ["draft", "sent", "acknowledged", "received", "cancelled"]).default("draft"),
+  total_amount: int("total_amount").default(0), // Stored in cents
+  notes: text("notes"),
+  created_by: varchar("created_by", { length: 64 }),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  poNumberIdx: index("po_number_idx").on(table.po_number),
+  vendorIdx: index("vendor_idx").on(table.vendor_id),
+  statusIdx: index("status_idx").on(table.status),
+}));
+
+export const poLineItems = mysqlTable("po_line_items", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  po_id: varchar("po_id", { length: 64 }).notNull(),
+  line_number: int("line_number").notNull(),
+  product_id: varchar("product_id", { length: 64 }),
+  part_number: varchar("part_number", { length: 128 }).notNull(),
+  description: text("description"),
+  quantity: int("quantity").notNull(),
+  unit_price: int("unit_price").notNull(), // Stored in cents
+  total_price: int("total_price").notNull(), // Stored in cents
+  received_quantity: int("received_quantity").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  poIdx: index("po_idx").on(table.po_id),
+  productIdx: index("product_idx").on(table.product_id),
+}));
+
+export type Vendor = typeof vendors.$inferSelect;
+export type InsertVendor = typeof vendors.$inferInsert;
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
+export type InsertPurchaseOrder = typeof purchaseOrders.$inferInsert;
+export type POLineItem = typeof poLineItems.$inferSelect;
+export type InsertPOLineItem = typeof poLineItems.$inferInsert;
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText } from "lucide-react";
+import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText, Users, Edit, BarChart3 } from "lucide-react";
 import { Link } from "wouter";
 import LaserFlow from "@/components/LaserFlow";
 import ElectricBorder from "@/components/ElectricBorder";
@@ -93,8 +93,8 @@ export default function Home() {
           {/* Quick Actions */}
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-white mb-8 tracking-tight">Quick Actions</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
               <Link href="/search">
                 <QuickActionCard
                   title="Search Products"
@@ -102,6 +102,15 @@ export default function Home() {
                   icon={<Search className="w-8 h-8" />}
                 />
               </Link>
+              {permissions.canEditProducts && (
+                <Link href="/products">
+                  <QuickActionCard
+                    title="Manage Products"
+                    description="Add, edit products"
+                    icon={<Edit className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
               {permissions.canUpdateStock && (
                 <Link href="/stock">
                   <QuickActionCard
@@ -111,11 +120,33 @@ export default function Home() {
                   />
                 </Link>
               )}
-              <QuickActionCard
-                title="Create PO"
-                description="New purchase order"
-                icon={<FileText className="w-8 h-8" />}
-              />
+              {permissions.canViewPOs && (
+                <Link href="/purchase-orders">
+                  <QuickActionCard
+                    title="Purchase Orders"
+                    description="Manage vendor POs"
+                    icon={<FileText className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
+              {permissions.canManageUsers && (
+                <Link href="/users">
+                  <QuickActionCard
+                    title="User Management"
+                    description="Manage roles"
+                    icon={<Users className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
+              {permissions.canViewAnalytics && (
+                <Link href="/analytics">
+                  <QuickActionCard
+                    title="Analytics"
+                    description="View reports"
+                    icon={<BarChart3 className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
             </div>
           </section>
 

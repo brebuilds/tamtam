@@ -1,6 +1,18 @@
 import { eq, like, or, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, products, Product, InsertProduct } from "../drizzle/schema";
+import {
+  InsertUser,
+  users,
+  products,
+  Product,
+  InsertProduct,
+  purchaseOrders,
+  PurchaseOrder,
+  InsertPurchaseOrder,
+  vendors,
+  Vendor,
+  InsertVendor
+} from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -79,6 +91,30 @@ export async function getUser(id: string) {
   const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(users)
+    .orderBy(users.name);
+
+  return result;
+}
+
+export async function updateUserRole(userId: string, role: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(users)
+    .set({ role: role as any })
+    .where(eq(users.id, userId));
+
+  return await getUser(userId);
 }
 
 // ============================================================================
@@ -225,12 +261,185 @@ export async function getLowStockProducts(limit: number = 50): Promise<Product[]
     .orderBy(desc(products.stock_quantity));
 
   // Filter for low stock items
-  const lowStock = allProducts.filter(p => 
-    p.stock_quantity !== null && 
-    p.reorder_point !== null && 
+  const lowStock = allProducts.filter(p =>
+    p.stock_quantity !== null &&
+    p.reorder_point !== null &&
     p.stock_quantity <= p.reorder_point
   );
 
   return lowStock.slice(0, limit);
+}
+
+export async function createProduct(data: InsertProduct): Promise<Product> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(products).values({
+    id,
+    ...data,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  const product = await getProductById(id);
+  if (!product) throw new Error("Failed to create product");
+
+  return product;
+}
+
+export async function updateProduct(
+  productId: string,
+  data: Partial<InsertProduct>
+): Promise<Product | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(products)
+    .set({
+      ...data,
+      updated_at: new Date(),
+    })
+    .where(eq(products.id, productId));
+
+  return await getProductById(productId);
+}
+
+export async function deleteProduct(productId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db
+    .delete(products)
+    .where(eq(products.id, productId));
+
+  return true;
+}
+
+// ============================================================================
+// PURCHASE ORDERS FUNCTIONS
+// ============================================================================
+
+export async function getAllPurchaseOrders(limit: number = 100): Promise<PurchaseOrder[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(purchaseOrders)
+    .orderBy(desc(purchaseOrders.created_at))
+    .limit(limit);
+
+  return result;
+}
+
+export async function getPurchaseOrderById(id: string): Promise<PurchaseOrder | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(purchaseOrders)
+    .where(eq(purchaseOrders.id, id))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function createPurchaseOrder(data: any): Promise<PurchaseOrder> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(purchaseOrders).values({
+    id,
+    po_number: data.po_number,
+    vendor_id: data.vendor_id,
+    po_date: new Date(data.po_date),
+    expected_delivery_date: data.expected_delivery_date ? new Date(data.expected_delivery_date) : null,
+    notes: data.notes,
+    status: 'draft',
+    total_amount: 0,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  const po = await getPurchaseOrderById(id);
+  if (!po) throw new Error("Failed to create purchase order");
+
+  return po;
+}
+
+export async function updatePurchaseOrder(
+  poId: string,
+  data: Partial<InsertPurchaseOrder>
+): Promise<PurchaseOrder | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(purchaseOrders)
+    .set({
+      ...data,
+      updated_at: new Date(),
+    })
+    .where(eq(purchaseOrders.id, poId));
+
+  return await getPurchaseOrderById(poId);
+}
+
+// ============================================================================
+// VENDORS FUNCTIONS
+// ============================================================================
+
+export async function getAllVendors(): Promise<Vendor[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(vendors)
+    .where(eq(vendors.is_active, true))
+    .orderBy(vendors.vendor_name);
+
+  return result;
+}
+
+export async function getVendorById(id: string): Promise<Vendor | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(vendors)
+    .where(eq(vendors.id, id))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function createVendor(data: InsertVendor): Promise<Vendor> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(vendors).values({
+    id,
+    ...data,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  const vendor = await getVendorById(id);
+  if (!vendor) throw new Error("Failed to create vendor");
+
+  return vendor;
 }
 
