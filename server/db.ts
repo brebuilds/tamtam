@@ -11,7 +11,13 @@ import {
   InsertPurchaseOrder,
   vendors,
   Vendor,
-  InsertVendor
+  InsertVendor,
+  formTemplates,
+  FormTemplate,
+  InsertFormTemplate,
+  formSubmissions,
+  FormSubmission,
+  InsertFormSubmission
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -441,5 +447,106 @@ export async function createVendor(data: InsertVendor): Promise<Vendor> {
   if (!vendor) throw new Error("Failed to create vendor");
 
   return vendor;
+}
+
+// ============================================================================
+// FORMS FUNCTIONS
+// ============================================================================
+
+export async function getAllFormTemplates(): Promise<FormTemplate[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(formTemplates)
+    .orderBy(formTemplates.name);
+
+  return result;
+}
+
+export async function createFormTemplate(data: any): Promise<FormTemplate> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(formTemplates).values({
+    id,
+    name: data.name,
+    description: data.description,
+    category: data.category,
+    isActive: data.isActive ?? true,
+    fields: data.fields,
+    version: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  const template = await db.select().from(formTemplates).where(eq(formTemplates.id, id)).limit(1);
+  if (!template[0]) throw new Error("Failed to create form template");
+
+  return template[0];
+}
+
+export async function updateFormTemplate(templateId: string, data: any): Promise<FormTemplate | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(formTemplates)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(formTemplates.id, templateId));
+
+  const result = await db.select().from(formTemplates).where(eq(formTemplates.id, templateId)).limit(1);
+  return result[0];
+}
+
+export async function deleteFormTemplate(templateId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db.delete(formTemplates).where(eq(formTemplates.id, templateId));
+  return true;
+}
+
+export async function submitForm(data: any): Promise<FormSubmission> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(formSubmissions).values({
+    id,
+    templateId: data.templateId,
+    productId: data.productId,
+    data: data.data,
+    submittedBy: data.submittedBy,
+    submittedAt: new Date(),
+    status: 'submitted',
+  });
+
+  const submission = await db.select().from(formSubmissions).where(eq(formSubmissions.id, id)).limit(1);
+  if (!submission[0]) throw new Error("Failed to submit form");
+
+  return submission[0];
+}
+
+export async function getAllFormSubmissions(limit: number = 100): Promise<FormSubmission[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(formSubmissions)
+    .orderBy(desc(formSubmissions.submittedAt))
+    .limit(limit);
+
+  return result;
 }
 

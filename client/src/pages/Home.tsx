@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText, Users, Edit, BarChart3 } from "lucide-react";
+import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText, Users, Edit, BarChart3, Download, ClipboardList } from "lucide-react";
 import { Link } from "wouter";
 import LaserFlow from "@/components/LaserFlow";
 import ElectricBorder from "@/components/ElectricBorder";
@@ -144,6 +144,33 @@ export default function Home() {
                     title="Analytics"
                     description="View reports"
                     icon={<BarChart3 className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
+              {permissions.canExportData && (
+                <Link href="/export">
+                  <QuickActionCard
+                    title="Export Data"
+                    description="Download CSV/JSON"
+                    icon={<Download className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
+              {permissions.canFillForms && (
+                <Link href="/forms">
+                  <QuickActionCard
+                    title="Forms"
+                    description="Fill custom forms"
+                    icon={<ClipboardList className="w-8 h-8" />}
+                  />
+                </Link>
+              )}
+              {permissions.canManageForms && (
+                <Link href="/forms-admin">
+                  <QuickActionCard
+                    title="Form Templates"
+                    description="Manage form templates"
+                    icon={<FileText className="w-8 h-8" />}
                   />
                 </Link>
               )}

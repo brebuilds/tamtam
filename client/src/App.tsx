@@ -11,6 +11,10 @@ import StockManagement from "./pages/StockManagement";
 import ProductManagement from "./pages/ProductManagement";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import UserManagement from "./pages/UserManagement";
+import Analytics from "./pages/Analytics";
+import DataExport from "./pages/DataExport";
+import Forms from "./pages/Forms";
+import FormsAdmin from "./pages/FormsAdmin";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -22,6 +26,10 @@ function Router() {
       <Route path="/products" component={ProductManagement} />
       <Route path="/purchase-orders" component={PurchaseOrders} />
       <Route path="/users" component={UserManagement} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/export" component={DataExport} />
+      <Route path="/forms" component={Forms} />
+      <Route path="/forms-admin" component={FormsAdmin} />
       <Route path="/product/:id" component={ProductDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

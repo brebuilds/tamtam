@@ -218,6 +218,66 @@ export const appRouter = router({
         return await db.createVendor(input);
       }),
   }),
+
+  // Forms routes
+  forms: router({
+    listTemplates: publicProcedure.query(async () => {
+      return await db.getAllFormTemplates();
+    }),
+
+    createTemplate: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        category: z.string().optional(),
+        isActive: z.boolean().optional(),
+        fields: z.array(z.any()),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createFormTemplate(input);
+      }),
+
+    updateTemplate: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        category: z.string().optional(),
+        isActive: z.boolean().optional(),
+        fields: z.array(z.any()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updateFormTemplate(id, data);
+      }),
+
+    deleteTemplate: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        return await db.deleteFormTemplate(input.id);
+      }),
+
+    submitForm: protectedProcedure
+      .input(z.object({
+        templateId: z.string(),
+        productId: z.string().optional(),
+        data: z.record(z.any()),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.submitForm({
+          templateId: input.templateId,
+          productId: input.productId,
+          data: input.data,
+          submittedBy: ctx.user?.id
+        });
+      }),
+
+    listSubmissions: publicProcedure
+      .input(z.object({ limit: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        return await db.getAllFormSubmissions(input?.limit || 100);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
