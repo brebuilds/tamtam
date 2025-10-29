@@ -40,7 +40,7 @@ export default function Home() {
             <div>
               <h1 className="text-2xl font-bold text-white tracking-tight">{APP_TITLE}</h1>
               {isAuthenticated && user && (
-                <p className="text-sm text-gray-400">Welcome back, {user.name}</p>
+                <p className="text-sm text-gray-400">Welcome back, {user.user_metadata?.name || user.email?.split('@')[0] || 'User'}</p>
               )}
             </div>
             {isAuthenticated ? (
