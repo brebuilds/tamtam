@@ -10,14 +10,20 @@ import LaserFlow from "@/components/LaserFlow";
 import ElectricBorder from "@/components/ElectricBorder";
 
 export default function Home() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const [, setLocation] = useLocation();
   const permissions = usePermissions();
   const isAuthenticated = !!user;
-  
+
+  // Redirect to login if not authenticated
+  if (!loading && !isAuthenticated) {
+    setLocation('/login');
+    return null;
+  }
+
   // Fetch product stats
   const { data: stats, isLoading: statsLoading } = trpc.products.stats.useQuery();
-  
+
   // Fetch recent products
   const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery({ limit: 10 });
 
