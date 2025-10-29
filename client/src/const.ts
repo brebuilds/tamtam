@@ -10,6 +10,13 @@ export const APP_LOGO =
 export const getLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
+
+  // Validate required environment variables
+  if (!oauthPortalUrl || !appId) {
+    console.error('Missing required environment variables: VITE_OAUTH_PORTAL_URL or VITE_APP_ID');
+    return '#';
+  }
+
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 
