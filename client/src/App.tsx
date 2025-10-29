@@ -15,11 +15,12 @@ import Analytics from "./pages/Analytics";
 import DataExport from "./pages/DataExport";
 import Forms from "./pages/Forms";
 import FormsAdmin from "./pages/FormsAdmin";
+import Login from "./pages/Login";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
+      <Route path="/login" component={Login} />
       <Route path={"/"} component={Home} />
       <Route path="/search" component={Search} />
       <Route path="/stock" component={StockManagement} />
