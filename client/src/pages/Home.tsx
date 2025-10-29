@@ -1,17 +1,19 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { APP_TITLE, getLoginUrl } from "@/const";
+import { APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Package, ShoppingCart, AlertTriangle, TrendingUp, Search, Box, FileText, Users, Edit, BarChart3, Download, ClipboardList } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import LaserFlow from "@/components/LaserFlow";
 import ElectricBorder from "@/components/ElectricBorder";
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, signOut } = useAuth();
+  const [, setLocation] = useLocation();
   const permissions = usePermissions();
+  const isAuthenticated = !!user;
   
   // Fetch product stats
   const { data: stats, isLoading: statsLoading } = trpc.products.stats.useQuery();
@@ -42,12 +44,16 @@ export default function Home() {
               )}
             </div>
             {isAuthenticated ? (
-              <Button variant="outline" className="bg-white/5 border-white/20 hover:bg-white/10">
+              <Button
+                variant="outline"
+                className="bg-white/5 border-white/20 hover:bg-white/10"
+                onClick={() => signOut().then(() => setLocation('/login'))}
+              >
                 Sign Out
               </Button>
             ) : (
-              <Button 
-                onClick={() => window.location.href = getLoginUrl()}
+              <Button
+                onClick={() => setLocation('/login')}
                 className="bg-gradient-to-r from-[#7FBF3F] to-[#5a9e2a] hover:from-[#6aa835] hover:to-[#4a8520]"
               >
                 Sign In
