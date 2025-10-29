@@ -44,9 +44,12 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       async fetch(input, init) {
-        // Get the current session token
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
+        // Get the current session token if Supabase is configured
+        let token: string | undefined;
+        if (supabase) {
+          const { data: { session } } = await supabase.auth.getSession();
+          token = session?.access_token;
+        }
 
         // Build headers properly
         const headers = new Headers(init?.headers || {});
