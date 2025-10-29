@@ -5,6 +5,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  VITE_SUPABASE_URL = "https://nybjrfxjgiirgiplsixi.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55YmpyZnhqZ2lpcmdpcGxzaXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3MDg3NzUsImV4cCI6MjA3NzI4NDc3NX0.CIE66jPR_ZnkoyYmjcW6PTb7PtOt0aYV7039wy-Au24"
 
 # Redirect API requests to serverless function
 [[redirects]]
