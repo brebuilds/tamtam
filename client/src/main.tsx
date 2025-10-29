@@ -48,13 +48,16 @@ const trpcClient = trpc.createClient({
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
 
+        // Build headers properly
+        const headers = new Headers(init?.headers || {});
+        if (token) {
+          headers.set('Authorization', `Bearer ${token}`);
+        }
+
         return globalThis.fetch(input, {
           ...(init ?? {}),
           credentials: "include",
-          headers: {
-            ...init?.headers,
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers,
         });
       },
     }),
