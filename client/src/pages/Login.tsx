@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { APP_TITLE } from '@/const';
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -53,11 +54,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>TamerX Inventory</CardTitle>
-          <CardDescription>Sign in to manage your inventory</CardDescription>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">{APP_TITLE}</CardTitle>
+          <CardDescription>Sign in to access your diesel parts hub</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">

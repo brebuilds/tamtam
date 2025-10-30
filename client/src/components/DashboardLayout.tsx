@@ -19,17 +19,23 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO, APP_TITLE } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { Home, Database, BookOpen, LogOut, PanelLeft, Users, Package, ShoppingCart, BarChart3, FileText } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: Home, label: "News Feed", path: "/" },
+  { icon: Database, label: "Parts Database", path: "/products" },
+  { icon: BookOpen, label: "Knowledge Hub", path: "/knowledge-hub" },
+  { icon: Package, label: "Stock Management", path: "/stock" },
+  { icon: ShoppingCart, label: "Purchase Orders", path: "/purchase-orders" },
+  { icon: BarChart3, label: "Analytics", path: "/analytics" },
+  { icon: Users, label: "User Management", path: "/users" },
+  { icon: FileText, label: "Data Export", path: "/export" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -79,7 +85,7 @@ export default function DashboardLayout({
           </div>
           <Button
             onClick={() => {
-              window.location.href = getLoginUrl();
+              window.location.href = "/login";
             }}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"

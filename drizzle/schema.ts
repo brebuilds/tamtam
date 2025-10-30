@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, varchar, integer, decimal, boolean, json, index, pgEnum } from "drizzle-orm/pg-core";
 
 /**
- * TamerX Inventory Management Database Schema
+ * Diesel Industry Knowledge & Inventory Hub Database Schema
  */
 
 // ============================================================================
@@ -11,6 +11,9 @@ import { pgTable, text, timestamp, varchar, integer, decimal, boolean, json, ind
 export const userRoleEnum = pgEnum("user_role", ["admin", "manager", "shop_floor", "sales", "readonly"]);
 export const productStatusEnum = pgEnum("product_status", ["active", "inactive", "discontinued"]);
 export const poStatusEnum = pgEnum("po_status", ["draft", "sent", "acknowledged", "received", "cancelled"]);
+export const postTypeEnum = pgEnum("post_type", ["bulletin", "news", "diesel_tech", "announcement"]);
+export const documentCategoryEnum = pgEnum("document_category", ["training_video", "equipment_manual", "safety_guideline", "inventory_guide", "faq", "general"]);
+export const commentableTypeEnum = pgEnum("commentable_type", ["post", "document", "training_material"]);
 
 // ============================================================================
 // USERS TABLE (Authentication)
@@ -221,4 +224,142 @@ export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
 export type InsertPurchaseOrder = typeof purchaseOrders.$inferInsert;
 export type POLineItem = typeof poLineItems.$inferSelect;
 export type InsertPOLineItem = typeof poLineItems.$inferInsert;
+
+// ============================================================================
+// BULLETIN / NEWS FEED (Home Page)
+// ============================================================================
+
+export const posts = pgTable("posts", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  title: varchar("title", { length: 500 }).notNull(),
+  content: text("content").notNull(),
+  type: postTypeEnum("type").default("bulletin").notNull(),
+  
+  // Rich content
+  excerpt: text("excerpt"),
+  featured_image: text("featured_image"),
+  external_link: text("external_link"), // For external diesel news articles
+  tags: json("tags"), // Array of tags: string[]
+  
+  // Metadata
+  author_id: varchar("author_id", { length: 64 }).notNull(),
+  is_pinned: boolean("is_pinned").default(false),
+  is_published: boolean("is_published").default(true),
+  view_count: integer("view_count").default(0),
+  
+  // Timestamps
+  published_at: timestamp("published_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  typeIdx: index("post_type_idx").on(table.type),
+  authorIdx: index("post_author_idx").on(table.author_id),
+  publishedIdx: index("post_published_idx").on(table.is_published),
+  pinnedIdx: index("post_pinned_idx").on(table.is_pinned),
+}));
+
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = typeof posts.$inferInsert;
+
+// ============================================================================
+// KNOWLEDGE HUB / TRAINING CENTER
+// ============================================================================
+
+export const documents = pgTable("documents", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description"),
+  category: documentCategoryEnum("category").notNull(),
+  
+  // File information
+  file_url: text("file_url"), // URL to document/video file
+  file_type: varchar("file_type", { length: 100 }), // pdf, mp4, docx, etc.
+  file_size: integer("file_size"), // in bytes
+  thumbnail_url: text("thumbnail_url"), // For videos
+  
+  // For training videos
+  duration: integer("duration"), // video duration in seconds
+  video_platform: varchar("video_platform", { length: 50 }), // youtube, vimeo, self-hosted
+  video_id: varchar("video_id", { length: 255 }), // External video ID
+  
+  // Metadata
+  uploaded_by: varchar("uploaded_by", { length: 64 }).notNull(),
+  tags: json("tags"), // Array of tags: string[]
+  is_public: boolean("is_public").default(true), // Whether all employees can view
+  view_count: integer("view_count").default(0),
+  download_count: integer("download_count").default(0),
+  
+  // For FAQs and guides
+  order_index: integer("order_index").default(0), // For ordering within categories
+  
+  // Timestamps
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  categoryIdx: index("doc_category_idx").on(table.category),
+  uploaderIdx: index("doc_uploader_idx").on(table.uploaded_by),
+  publicIdx: index("doc_public_idx").on(table.is_public),
+}));
+
+export type Document = typeof documents.$inferSelect;
+export type InsertDocument = typeof documents.$inferInsert;
+
+// ============================================================================
+// COMMENTS SYSTEM (Universal)
+// ============================================================================
+
+export const comments = pgTable("comments", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  
+  // Polymorphic reference - what is being commented on
+  commentable_type: commentableTypeEnum("commentable_type").notNull(),
+  commentable_id: varchar("commentable_id", { length: 64 }).notNull(),
+  
+  // Comment content
+  content: text("content").notNull(),
+  
+  // Threading support
+  parent_comment_id: varchar("parent_comment_id", { length: 64 }), // For replies
+  
+  // Metadata
+  author_id: varchar("author_id", { length: 64 }).notNull(),
+  is_edited: boolean("is_edited").default(false),
+  is_deleted: boolean("is_deleted").default(false),
+  
+  // Timestamps
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  commentableIdx: index("comment_commentable_idx").on(table.commentable_type, table.commentable_id),
+  authorIdx: index("comment_author_idx").on(table.author_id),
+  parentIdx: index("comment_parent_idx").on(table.parent_comment_id),
+}));
+
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = typeof comments.$inferInsert;
+
+// ============================================================================
+// REACTIONS/LIKES (Optional enhancement)
+// ============================================================================
+
+export const reactions = pgTable("reactions", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  
+  // What is being reacted to
+  reactable_type: varchar("reactable_type", { length: 50 }).notNull(), // post, comment, document
+  reactable_id: varchar("reactable_id", { length: 64 }).notNull(),
+  
+  // Reaction details
+  user_id: varchar("user_id", { length: 64 }).notNull(),
+  reaction_type: varchar("reaction_type", { length: 50 }).default("like"), // like, helpful, etc.
+  
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  reactableIdx: index("reaction_reactable_idx").on(table.reactable_type, table.reactable_id),
+  userIdx: index("reaction_user_idx").on(table.user_id),
+  uniqueReaction: index("unique_reaction_idx").on(table.reactable_type, table.reactable_id, table.user_id),
+}));
+
+export type Reaction = typeof reactions.$inferSelect;
+export type InsertReaction = typeof reactions.$inferInsert;
 

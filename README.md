@@ -1,9 +1,9 @@
-# TamerX Inventory Management System
+# Diesel Industry Hub
 
-**Complete, production-ready inventory management system for steering rack components**
+**Complete knowledge sharing, news feed, and inventory management platform for diesel industry professionals**
 
 [![Status](https://img.shields.io/badge/status-production--ready-success)](/)
-[![Features](https://img.shields.io/badge/features-100%25%20complete-brightgreen)](/)
+[![Features](https://img.shields.io/badge/features-complete-brightgreen)](/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](/)
 
 ---
@@ -38,29 +38,46 @@ pnpm run dev
 
 ## 📋 What's Included
 
-### ✅ Complete Feature Set
+### ✅ Three Core Modules
 
-- **Product Management** - Full CRUD with 40+ fields
-- **Image Support** - Primary + gallery images
-- **Search** - Quick search + AI semantic search
-- **Stock Management** - Set/adjust with alerts
+#### 1. **News Feed & Bulletin Board** 🏠
+- **Staff Bulletins** - Internal team announcements
+- **Industry News** - Latest diesel technology updates
+- **Diesel Tech Posts** - Cool technologies, trend assessments
+- **National Shortages** - Supply chain alerts
+- **Social Features** - Comments, likes, threaded discussions
+- **Pinned Posts** - Important announcements stay at top
+- **Rich Content** - Images, external links, tags
+
+#### 2. **Parts Database** 🔧
+- **Diesel Parts Inventory** - Comprehensive parts catalog
+- **Advanced Search** - Quick search by part number
+- **Stock Management** - Real-time inventory tracking
 - **Purchase Orders** - Full PO workflow
-- **User Management** - 5-tier role system
-- **Analytics Dashboard** - Charts & insights
-- **Data Export** - CSV/JSON export
-- **Custom Forms** - Dynamic form builder
-- **Barcode Scanner** - Mobile PWA ready
-- **Role Permissions** - Granular access control
+- **Product Details** - Specifications, images, applications
+- **Low Stock Alerts** - Automated reorder notifications
 
-### 📊 By The Numbers
+#### 3. **Knowledge Hub & Training Center** 📚
+- **Training Videos** - Equipment operation & testing
+- **Equipment Manuals** - Shop equipment guides
+- **Safety Guidelines** - Safety protocols & procedures
+- **Inventory Guides** - How-to documentation
+- **FAQ Section** - Frequently asked questions
+- **Employee Uploads** - Staff can contribute documents
+- **Video Support** - YouTube, Vimeo, self-hosted
+- **Comments on Docs** - Discussion on any resource
 
-- **20** major features implemented
-- **11** pages/routes
-- **40+** tRPC API endpoints
-- **8** database tables
-- **5** user permission levels
-- **1,131** products ready to import
-- **100%** feature complete
+### 🎯 Core Features
+
+- **User Authentication** - Per-employee login with OAuth
+- **Comment System** - Threaded comments on posts & documents
+- **Reactions/Likes** - Engage with content
+- **Search** - Powerful search across all content
+- **Categories** - Organized by content type
+- **File Support** - PDFs, videos, images, documents
+- **View Tracking** - Analytics on content engagement
+- **Mobile Friendly** - Responsive design for all devices
+- **Role-Based Access** - 5-tier permission system
 
 ---
 
@@ -122,7 +139,13 @@ pnpm run dev
 
 ```
 users (authentication, roles)
-├── products (steering rack catalog)
+├── posts (news feed, bulletins, announcements)
+│   └── comments (threaded discussions)
+│       └── reactions (likes, helpful)
+├── documents (training materials, manuals, FAQs)
+│   └── comments (discussions on resources)
+│       └── reactions
+├── products (diesel parts catalog)
 ├── purchase_orders (PO management)
 │   └── po_line_items
 ├── vendors (supplier info)

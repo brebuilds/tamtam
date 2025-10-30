@@ -1,4 +1,4 @@
-import { eq, like, or, desc } from "drizzle-orm";
+import { eq, like, or, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
@@ -18,7 +18,19 @@ import {
   InsertFormTemplate,
   formSubmissions,
   FormSubmission,
-  InsertFormSubmission
+  InsertFormSubmission,
+  posts,
+  Post,
+  InsertPost,
+  documents,
+  Document,
+  InsertDocument,
+  comments,
+  Comment,
+  InsertComment,
+  reactions,
+  Reaction,
+  InsertReaction
 } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -551,5 +563,435 @@ export async function getAllFormSubmissions(limit: number = 100): Promise<FormSu
     .limit(limit);
 
   return result;
+}
+
+// ============================================================================
+// POSTS FUNCTIONS (Bulletin/News Feed)
+// ============================================================================
+
+export async function getAllPosts(limit: number = 50): Promise<Post[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.is_published, true))
+    .orderBy(desc(posts.is_pinned), desc(posts.published_at))
+    .limit(limit);
+
+  return result;
+}
+
+export async function getPostById(id: string): Promise<Post | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, id))
+    .limit(1);
+
+  // Increment view count
+  if (result[0]) {
+    await db
+      .update(posts)
+      .set({ view_count: (result[0].view_count || 0) + 1 })
+      .where(eq(posts.id, id));
+  }
+
+  return result[0];
+}
+
+export async function searchPosts(query: string, limit: number = 50): Promise<Post[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const searchPattern = `%${query}%`;
+
+  const result = await db
+    .select()
+    .from(posts)
+    .where(
+      and(
+        eq(posts.is_published, true),
+        or(
+          like(posts.title, searchPattern),
+          like(posts.content, searchPattern)
+        )
+      )
+    )
+    .orderBy(desc(posts.published_at))
+    .limit(limit);
+
+  return result;
+}
+
+export async function createPost(data: Omit<InsertPost, 'id' | 'created_at' | 'updated_at'>): Promise<Post> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(posts).values({
+    id,
+    ...data,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  const post = await getPostById(id);
+  if (!post) throw new Error("Failed to create post");
+
+  return post;
+}
+
+export async function updatePost(
+  postId: string,
+  data: Partial<InsertPost>
+): Promise<Post | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(posts)
+    .set({
+      ...data,
+      updated_at: new Date(),
+    })
+    .where(eq(posts.id, postId));
+
+  return await getPostById(postId);
+}
+
+export async function deletePost(postId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  // Soft delete by unpublishing
+  await db
+    .update(posts)
+    .set({ is_published: false })
+    .where(eq(posts.id, postId));
+
+  return true;
+}
+
+// ============================================================================
+// DOCUMENTS FUNCTIONS (Training Center/Knowledge Hub)
+// ============================================================================
+
+export async function getAllDocuments(limit: number = 100): Promise<Document[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(documents)
+    .where(eq(documents.is_public, true))
+    .orderBy(documents.category, documents.order_index, desc(documents.created_at))
+    .limit(limit);
+
+  return result;
+}
+
+export async function getDocumentsByCategory(category: string, limit: number = 100): Promise<Document[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(documents)
+    .where(
+      and(
+        eq(documents.category, category as any),
+        eq(documents.is_public, true)
+      )
+    )
+    .orderBy(documents.order_index, desc(documents.created_at))
+    .limit(limit);
+
+  return result;
+}
+
+export async function getDocumentById(id: string): Promise<Document | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(documents)
+    .where(eq(documents.id, id))
+    .limit(1);
+
+  // Increment view count
+  if (result[0]) {
+    await db
+      .update(documents)
+      .set({ view_count: (result[0].view_count || 0) + 1 })
+      .where(eq(documents.id, id));
+  }
+
+  return result[0];
+}
+
+export async function searchDocuments(query: string, limit: number = 50): Promise<Document[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const searchPattern = `%${query}%`;
+
+  const result = await db
+    .select()
+    .from(documents)
+    .where(
+      and(
+        eq(documents.is_public, true),
+        or(
+          like(documents.title, searchPattern),
+          like(documents.description, searchPattern)
+        )
+      )
+    )
+    .orderBy(desc(documents.created_at))
+    .limit(limit);
+
+  return result;
+}
+
+export async function createDocument(data: Omit<InsertDocument, 'id' | 'created_at' | 'updated_at'>): Promise<Document> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(documents).values({
+    id,
+    ...data,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  const document = await getDocumentById(id);
+  if (!document) throw new Error("Failed to create document");
+
+  return document;
+}
+
+export async function updateDocument(
+  documentId: string,
+  data: Partial<InsertDocument>
+): Promise<Document | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(documents)
+    .set({
+      ...data,
+      updated_at: new Date(),
+    })
+    .where(eq(documents.id, documentId));
+
+  return await getDocumentById(documentId);
+}
+
+export async function deleteDocument(documentId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db
+    .delete(documents)
+    .where(eq(documents.id, documentId));
+
+  return true;
+}
+
+export async function incrementDocumentDownload(documentId: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const doc = await getDocumentById(documentId);
+  if (doc) {
+    await db
+      .update(documents)
+      .set({ download_count: (doc.download_count || 0) + 1 })
+      .where(eq(documents.id, documentId));
+  }
+}
+
+// ============================================================================
+// COMMENTS FUNCTIONS (Universal Commenting System)
+// ============================================================================
+
+export async function getComments(
+  commentableType: string,
+  commentableId: string
+): Promise<Comment[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(comments)
+    .where(
+      and(
+        eq(comments.commentable_type, commentableType as any),
+        eq(comments.commentable_id, commentableId),
+        eq(comments.is_deleted, false)
+      )
+    )
+    .orderBy(comments.created_at);
+
+  return result;
+}
+
+export async function getCommentById(id: string): Promise<Comment | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(comments)
+    .where(eq(comments.id, id))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function createComment(data: Omit<InsertComment, 'id' | 'created_at' | 'updated_at'>): Promise<Comment> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { nanoid } = await import("nanoid");
+  const id = nanoid();
+
+  await db.insert(comments).values({
+    id,
+    ...data,
+    created_at: new Date(),
+    updated_at: new Date(),
+  });
+
+  const comment = await getCommentById(id);
+  if (!comment) throw new Error("Failed to create comment");
+
+  return comment;
+}
+
+export async function updateComment(
+  commentId: string,
+  content: string
+): Promise<Comment | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  await db
+    .update(comments)
+    .set({
+      content,
+      is_edited: true,
+      updated_at: new Date(),
+    })
+    .where(eq(comments.id, commentId));
+
+  return await getCommentById(commentId);
+}
+
+export async function deleteComment(commentId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  // Soft delete
+  await db
+    .update(comments)
+    .set({ is_deleted: true })
+    .where(eq(comments.id, commentId));
+
+  return true;
+}
+
+// ============================================================================
+// REACTIONS FUNCTIONS (Likes, etc.)
+// ============================================================================
+
+export async function getReactionCount(
+  reactableType: string,
+  reactableId: string
+): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db
+    .select()
+    .from(reactions)
+    .where(
+      and(
+        eq(reactions.reactable_type, reactableType),
+        eq(reactions.reactable_id, reactableId)
+      )
+    );
+
+  return result.length;
+}
+
+export async function getUserReaction(
+  reactableType: string,
+  reactableId: string,
+  userId: string
+): Promise<Reaction | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(reactions)
+    .where(
+      and(
+        eq(reactions.reactable_type, reactableType),
+        eq(reactions.reactable_id, reactableId),
+        eq(reactions.user_id, userId)
+      )
+    )
+    .limit(1);
+
+  return result[0];
+}
+
+export async function toggleReaction(
+  reactableType: string,
+  reactableId: string,
+  userId: string,
+  reactionType: string = "like"
+): Promise<{ added: boolean }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await getUserReaction(reactableType, reactableId, userId);
+
+  if (existing) {
+    // Remove reaction
+    await db
+      .delete(reactions)
+      .where(eq(reactions.id, existing.id));
+    return { added: false };
+  } else {
+    // Add reaction
+    const { nanoid } = await import("nanoid");
+    const id = nanoid();
+
+    await db.insert(reactions).values({
+      id,
+      reactable_type: reactableType,
+      reactable_id: reactableId,
+      user_id: userId,
+      reaction_type: reactionType,
+      created_at: new Date(),
+    });
+    return { added: true };
+  }
 }
 

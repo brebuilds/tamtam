@@ -278,6 +278,245 @@ export const appRouter = router({
         return await db.getAllFormSubmissions(input?.limit || 100);
       }),
   }),
+
+  // Posts routes (Bulletin/News Feed)
+  posts: router({
+    list: publicProcedure
+      .input(z.object({ limit: z.number().optional().default(50) }))
+      .query(async ({ input }) => {
+        return await db.getAllPosts(input.limit);
+      }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getPostById(input.id);
+      }),
+
+    search: publicProcedure
+      .input(z.object({
+        query: z.string(),
+        limit: z.number().optional().default(50)
+      }))
+      .query(async ({ input }) => {
+        return await db.searchPosts(input.query, input.limit);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        content: z.string(),
+        type: z.enum(["bulletin", "news", "diesel_tech", "announcement"]).optional(),
+        excerpt: z.string().optional(),
+        featured_image: z.string().optional(),
+        external_link: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        is_pinned: z.boolean().optional(),
+        is_published: z.boolean().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.createPost({
+          ...input,
+          author_id: ctx.user!.id,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        content: z.string().optional(),
+        type: z.enum(["bulletin", "news", "diesel_tech", "announcement"]).optional(),
+        excerpt: z.string().optional(),
+        featured_image: z.string().optional(),
+        external_link: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        is_pinned: z.boolean().optional(),
+        is_published: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updatePost(id, data);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        return await db.deletePost(input.id);
+      }),
+  }),
+
+  // Documents routes (Training Center/Knowledge Hub)
+  documents: router({
+    list: publicProcedure
+      .input(z.object({ limit: z.number().optional().default(100) }))
+      .query(async ({ input }) => {
+        return await db.getAllDocuments(input.limit);
+      }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getDocumentById(input.id);
+      }),
+
+    getByCategory: publicProcedure
+      .input(z.object({
+        category: z.enum(["training_video", "equipment_manual", "safety_guideline", "inventory_guide", "faq", "general"]),
+        limit: z.number().optional().default(100)
+      }))
+      .query(async ({ input }) => {
+        return await db.getDocumentsByCategory(input.category, input.limit);
+      }),
+
+    search: publicProcedure
+      .input(z.object({
+        query: z.string(),
+        limit: z.number().optional().default(50)
+      }))
+      .query(async ({ input }) => {
+        return await db.searchDocuments(input.query, input.limit);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        category: z.enum(["training_video", "equipment_manual", "safety_guideline", "inventory_guide", "faq", "general"]),
+        file_url: z.string().optional(),
+        file_type: z.string().optional(),
+        file_size: z.number().optional(),
+        thumbnail_url: z.string().optional(),
+        duration: z.number().optional(),
+        video_platform: z.string().optional(),
+        video_id: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        is_public: z.boolean().optional(),
+        order_index: z.number().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.createDocument({
+          ...input,
+          uploaded_by: ctx.user!.id,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        category: z.enum(["training_video", "equipment_manual", "safety_guideline", "inventory_guide", "faq", "general"]).optional(),
+        file_url: z.string().optional(),
+        file_type: z.string().optional(),
+        file_size: z.number().optional(),
+        thumbnail_url: z.string().optional(),
+        duration: z.number().optional(),
+        video_platform: z.string().optional(),
+        video_id: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        is_public: z.boolean().optional(),
+        order_index: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updateDocument(id, data);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        return await db.deleteDocument(input.id);
+      }),
+
+    incrementDownload: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.incrementDocumentDownload(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // Comments routes (Universal)
+  comments: router({
+    list: publicProcedure
+      .input(z.object({
+        commentableType: z.enum(["post", "document", "training_material"]),
+        commentableId: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getComments(input.commentableType, input.commentableId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        commentableType: z.enum(["post", "document", "training_material"]),
+        commentableId: z.string(),
+        content: z.string(),
+        parentCommentId: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.createComment({
+          commentable_type: input.commentableType,
+          commentable_id: input.commentableId,
+          content: input.content,
+          parent_comment_id: input.parentCommentId,
+          author_id: ctx.user!.id,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        content: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.updateComment(input.id, input.content);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        return await db.deleteComment(input.id);
+      }),
+  }),
+
+  // Reactions routes (Likes, etc.)
+  reactions: router({
+    getCount: publicProcedure
+      .input(z.object({
+        reactableType: z.string(),
+        reactableId: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getReactionCount(input.reactableType, input.reactableId);
+      }),
+
+    getUserReaction: publicProcedure
+      .input(z.object({
+        reactableType: z.string(),
+        reactableId: z.string(),
+        userId: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getUserReaction(input.reactableType, input.reactableId, input.userId);
+      }),
+
+    toggle: protectedProcedure
+      .input(z.object({
+        reactableType: z.string(),
+        reactableId: z.string(),
+        reactionType: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return await db.toggleReaction(
+          input.reactableType,
+          input.reactableId,
+          ctx.user!.id,
+          input.reactionType
+        );
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -4,7 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import NewsFeed from "./pages/NewsFeed";
 import Search from "./pages/Search";
 import ProductDetail from "./pages/ProductDetail";
 import StockManagement from "./pages/StockManagement";
@@ -16,12 +16,14 @@ import DataExport from "./pages/DataExport";
 import Forms from "./pages/Forms";
 import FormsAdmin from "./pages/FormsAdmin";
 import Login from "./pages/Login";
+import KnowledgeHub from "./pages/KnowledgeHub";
 
 function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      <Route path={"/"} component={Home} />
+      <Route path={"/"} component={NewsFeed} />
+      <Route path="/knowledge-hub" component={KnowledgeHub} />
       <Route path="/search" component={Search} />
       <Route path="/stock" component={StockManagement} />
       <Route path="/products" component={ProductManagement} />
