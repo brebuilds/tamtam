@@ -374,11 +374,17 @@ Built with:
 
 ## 🎉 Ready to Deploy!
 
-1. **Choose your setup:** Local Docker or Cloud (Vercel)
-2. **Follow the guide:** [QUICKSTART.md](QUICKSTART.md) or [CLOUD_DEPLOY.md](CLOUD_DEPLOY.md)
-3. **Import products:** Run `import_data.py` with your CSV
-4. **Create admin user:** Update role in database
-5. **Start managing inventory!** 🚀
+1. **Deploy to Vercel:** Follow the [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md) guide (10 minutes!)
+2. **Import products:** Already done! 558 diesel parts loaded ✅
+3. **Sign up:** Create your account on the deployed app
+4. **Start managing inventory!** 🚀
+
+**Local Development:**
+```bash
+pnpm install
+pnpm run dev
+# Visit http://localhost:3001
+```
 
 ---
 

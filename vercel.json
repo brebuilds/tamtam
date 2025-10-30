@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install && vite build",
+  "outputDirectory": "dist/public",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "NODE_VERSION": "20"
+  }
+}
+
